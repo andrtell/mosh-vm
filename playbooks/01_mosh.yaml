@@ -1,0 +1,38 @@
+- name: Mosh
+
+  hosts: all
+  remote_user: agent
+  become: true
+
+  handlers:
+    - name: Reboot
+      ansible.builtin.reboot:
+
+  tasks:
+
+    - name: Update packages
+      ansible.builtin.apt:
+        update_cache: true
+
+    - name: Upgrade packages
+      ansible.builtin.apt:
+        upgrade: true
+    
+    - name: Install packages
+      ansible.builtin.apt:
+        name:
+          - mosh
+        state: present
+
+    - name: Allow UDP port range 60000-61000
+      community.general.ufw:
+        rule: allow
+        port: 60000:61000
+        proto: udp
+
+    - name: Reload UFW
+      community.general.ufw:
+        default: deny
+        state: reloaded
+
+      notify: Reboot
